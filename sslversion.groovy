@@ -79,6 +79,10 @@ boolean isProtocolEnabled(String server, String protocol, SSLSocketFactory sf, b
     }
 }
 
+def printInfo(String msg) {
+    print Ansi.AUTO.string("@|green ${msg}|@")
+}
+
 def printWarning(String msg) {
     println Ansi.AUTO.string("@|bold,yellow ${msg}|@")
 }
@@ -102,18 +106,18 @@ def printProtocolSupport(String protocol, boolean enabled) {
     switch(protocol) {
         case "SSLv2":
             if (enabled) {
-                printError(ENABLED)
+                printError ENABLED
             }
             else {
-                printSuccess(NOT_ENABLED)
+                printSuccess NOT_ENABLED
             }
             break
         case "SSLv3":
             if (enabled) {
-                printError(ENABLED)
+                printError ENABLED
             }
             else {
-                printSuccess(NOT_ENABLED)
+                printSuccess NOT_ENABLED
             }
             break
         case "TLSv1":
@@ -128,14 +132,14 @@ def printProtocolSupport(String protocol, boolean enabled) {
         case "TLSv1.2":
         case "TLSv1.3":
             if (enabled) {
-                printSuccess(ENABLED)
+                printSuccess ENABLED
             }
             else {
-                println(NOT_ENABLED)
+                println NOT_ENABLED
             }
             break
         default:
-            printWarning("unexpected protocol")
+            printWarning "unexpected protocol"
     }
 }
 
@@ -244,19 +248,16 @@ List<Future> futures = expandedServers.collect { server ->
     executorService.submit({ -> callback(server) } as Callable)
 }
 
-//def spinner = '|/-\\'
 def spinner = "⣾⣽⣻⢿⡿⣟⣯⣷"
-
-
 def results = []
 def i = 0
 futures.each {
-    print "Processing ${spinner[i%8]}\r"
+    printInfo "${spinner[i%8]}\r"
     results << it.get()
     i += 1
 }
 
-println()
+print(" \r")
 
 executorService.shutdown()
 

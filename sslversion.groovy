@@ -3,6 +3,16 @@ import static picocli.CommandLine.*
 import groovy.transform.Field
 import picocli.CommandLine.Help.Ansi
 
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.ForkJoinPool
+import java.util.concurrent.Future
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.RejectedExecutionHandler
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+
 import java.net.Socket
 
 import javax.net.ssl.SSLContext
@@ -35,6 +45,9 @@ import javax.net.ssl.HostnameVerifier
 @Option(names = [ '-v', '--verbose'], description = 'Display more information.')
 @Field boolean verbose = false
 
+@Option(names = [ '-w', '--worker'], description = 'Number of workers (default: 1).')
+@Field int workers = 1
+
 ENABLED = "enabled"
 NOT_ENABLED = "not enabled"
 
@@ -46,6 +59,7 @@ boolean isProtocolEnabled(String server, String protocol, SSLSocketFactory sf, b
     port = (port ?: "443") as int
 
     Socket socket = new Socket()
+    socket.setSoTimeout(2000)
 
     socketAddr = new InetSocketAddress(hostname, port)
     socket.connect(socketAddr, 2000)
@@ -79,10 +93,10 @@ def printSuccess(String msg) {
 
 
 def printProtocolSupport(String protocol, boolean enabled) {
-    def msg
     if (protocol == "SSLv2Hello") {
         protocol = "SSLv2"
     }
+
     print "  ${protocol}".padRight(12)
 
     switch(protocol) {
@@ -172,24 +186,92 @@ servers.each { server ->
     }
 }
 
-def sf = initSocketFactory()
-def protocols = ["SSLv2Hello", "SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"]
+sf = initSocketFactory()
+protocols = ["SSLv2Hello", "SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"]
 
-expandedServers.each { server ->
-    printSuccess "\n${server}:"
+def callback(server) {
+    def r = [server: server, error: ""]
     try {
-        protocols.each { protocol ->
+        for (protocol in protocols) {
             supported = isProtocolEnabled(server, protocol, sf, verbose)
-            printProtocolSupport(protocol, supported)
+            switch (protocol) {
+                case "SSLv2Hello":
+                    r.sslv2 = supported
+                    break
+                case "SSLv3":
+                    r.sslv3 = supported
+                    break
+                case "TLSv1":
+                    r.tlsv1 = supported
+                    break
+                case "TLSv1.1":
+                    r.tlsv11 = supported
+                    break
+                case "TLSv1.2":
+                    r.tlsv12 = supported
+                    break
+                case "TLSv1.3":
+                    r.tlsv13 = supported
+                    break
+            }
         }
     }
     catch(java.net.SocketTimeoutException _) {
-        printError("  timeout")
+        r.error = "timeout"
     }
     catch(java.net.UnknownHostException _) {
-        printError("  unknown host")
+        r.error = "unknown host"
     }
     catch(Exception e) {
-        printError("  ${e}")
+        r.error = "${e}"
+    }
+    return r
+}
+
+ExecutorService executorService = Executors.newFixedThreadPool(workers)
+
+// RejectedExecutionHandler handler = new ThreadPoolExecutor.DiscardOldestPolicy()
+
+// ExecutorService executorService = new ThreadPoolExecutor(workers, workers,
+//     0L, TimeUnit.MILLISECONDS,
+//     new LinkedBlockingQueue<>(expandedServers.size()),
+//     handler)
+
+List<Future> futures = expandedServers.collect { server ->
+    if (verbose) {
+        println(">>> ${server}")
+    }
+    executorService.submit({ -> callback(server) } as Callable)
+}
+
+//def spinner = '|/-\\'
+def spinner = "⣾⣽⣻⢿⡿⣟⣯⣷"
+
+
+def results = []
+def i = 0
+futures.each {
+    print "Processing ${spinner[i%8]}\r"
+    results << it.get()
+    i += 1
+}
+
+println()
+
+executorService.shutdown()
+
+results.each { r ->
+    println()
+    printSuccess "${r.server}:"
+    if (r.error.size() > 0) {
+        printError("  Error: ${r.error}")
+    }
+    else {
+        printProtocolSupport("SSLv2Hello", r.sslv2)
+        printProtocolSupport("SSLv3", r.sslv3)
+        printProtocolSupport("TLSv1", r.tlsv1)
+        printProtocolSupport("TLSv1.1", r.tlsv11)
+        printProtocolSupport("TLSv1.2", r.tlsv12)
+        printProtocolSupport("TLSv1.3", r.tlsv13)
     }
 }

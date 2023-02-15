@@ -14,6 +14,8 @@ import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSession
 import javax.net.ssl.SSLSocket
 import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.HandshakeCompletedEvent
+import javax.net.ssl.HandshakeCompletedListener
 
 import javax.net.ssl.X509TrustManager
 import javax.net.ssl.TrustManager
@@ -46,6 +48,9 @@ import javax.net.ssl.HostnameVerifier
 ENABLED = "enabled"
 NOT_ENABLED = "not enabled"
 
+System.setProperty("sun.security.ssl.allowUnsafeRenegotiation", "true")
+//System.setProperty("javax.net.debug", "ssl:handshake:verbose")
+
 // ================================================================================
 // Logic
 // ================================================================================
@@ -64,6 +69,16 @@ boolean isProtocolEnabled(String server, String protocol, SSLSocketFactory sf, b
 
     boolean res = false
     try {
+        sslSocket.addHandshakeCompletedListener(new HandshakeCompletedListener() {
+            // TODO: make it more Groovy
+            void handshakeCompleted(HandshakeCompletedEvent handshakeCompletedEvent) {
+                SSLSession session = handshakeCompletedEvent.getSession()
+                def p = session.getProtocol()
+                if (debug) {
+                    println("expected protocol: $protocol -> negotiated protocol: $p")
+                }
+            }
+        })
         sslSocket.startHandshake()
         res = true
     }
@@ -96,21 +111,9 @@ def printSuccess(String msg) {
 
 
 def printProtocolSupport(String protocol, boolean enabled) {
-    if (protocol == "SSLv2Hello") {
-        protocol = "SSLv2"
-    }
-
-    print "  ${protocol}".padRight(12)
+    print "  ${protocol}".padRight(15)
 
     switch(protocol) {
-        case "SSLv2":
-            if (enabled) {
-                printError ENABLED
-            }
-            else {
-                printSuccess NOT_ENABLED
-            }
-            break
         case "SSLv3":
             if (enabled) {
                 printError ENABLED
@@ -189,7 +192,7 @@ servers.each { server ->
 }
 
 sf = initSocketFactory()
-protocols = ["SSLv2Hello", "SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"]
+protocols = ["SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"]
 
 def callback(server) {
     def res = [server: server, protocols: [], error: ""]

@@ -2,10 +2,6 @@ package com.burgaud.jssl;
 
 import java.util.concurrent.Callable;
 
-import com.burgaud.jssl.Cli;
-
-import picocli.CommandLine.Help.Ansi;
-
 import static picocli.CommandLine.*;
 
 @Command(name = "jssl", 

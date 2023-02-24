@@ -4,7 +4,6 @@ APP := "jssl"
 VERSION := "0.2.0"
 
 alias db := docker-build
-alias gkp := gen-keypair
 alias ghp := github-push
 alias gj := gradle-jar
 alias c := clean
@@ -29,6 +28,14 @@ gradle-native: gradle-jar
 # Clean build and release artifacts
 clean:
     ./gradlew clean
+    -rm -rf temp-native
+
+# Direct native compile (no Gradle)
+native: clean
+    ./gradlew distZip
+    mkdir -p temp-native/bin
+    unzip build/distributions/jssl.zip -d temp-native
+    native-image -cp temp-native/jssl/lib/picocli-4.7.1.jar -jar temp-native/jssl/lib/jssl.jar --static --no-fallback -o temp-native/bin/jssl
 
 # Push and tag changes to github
 github-push:

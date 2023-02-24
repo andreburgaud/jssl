@@ -35,6 +35,8 @@ graalvmNative {
         main {
             buildArgs.add('-o jssl') 
             buildArgs.add('--no-fallback')
+            buildArgs.add('--static')
+            buildArgs.add('--no-server')
         }
     }
 }

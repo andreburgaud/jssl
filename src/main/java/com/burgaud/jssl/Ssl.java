@@ -49,6 +49,8 @@ public class Ssl {
         SSLSocket sslSocket = (SSLSocket) factory.createSocket(socket, hostname, port, true);
         String[] protocols = new String[] {protocol};
         sslSocket.setEnabledProtocols(protocols);
+        String[] cf = sslSocket.getSupportedCipherSuites();
+        sslSocket.setEnabledCipherSuites(cf);
 
         boolean res = false;
         try {

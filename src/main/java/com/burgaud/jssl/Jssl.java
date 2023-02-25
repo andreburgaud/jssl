@@ -47,7 +47,7 @@ class Protocol implements Callable<Integer> {
     }
 
     private void printProtocolSupport(String protocol, boolean enabled) {
-        System.out.printf("  %s ", protocol);
+        System.out.printf("  %-15s ", protocol);
 
         switch(protocol) {
         case "SSLv3":
@@ -81,7 +81,8 @@ class Protocol implements Callable<Integer> {
         }
     }
 
-    public void checkProtocol(String server) {;
+    public void checkProtocol(String server) {
+        System.out.println();
         Cli.printBanner(server);
         String[] protocols = {"SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"};
         try {

@@ -6,11 +6,13 @@ import java.nio.file.Path;
 import java.net.UnknownHostException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static picocli.CommandLine.*;
@@ -54,10 +56,9 @@ class ProtocolCallable implements Callable<ServerProtocols> {
     }
 }
 
-
 @Command(name = "jssl", 
          mixinStandardHelpOptions = true, 
-         version = "@|green,bold jssl version 0.4.0 |@",
+         version = "@|green,bold jssl version 0.5.0 |@",
          header = {
             "@|green,bold     __  ____  ____  __           |@",
             "@|green,bold   _(  )/ ___)/ ___)(  )          |@",
@@ -74,109 +75,93 @@ public class Jssl implements Callable<Integer> {
 
     @Option(names = {"-f", "--file"}, description = "Servers are listed in a file.")
     private Path file;
+
+    @Option(names = {"--format"}, description = "Output format.")
+    private String format = "";
     
     @Option(names = {"-w", "--workers"}, description = "Number of concurrent workers.")
     private int workers = 1;
 
-    private static final String ENABLED = "enabled";
-    private static final String NOT_ENABLED = "not enabled";
     private Ssl ssl = null;
 
     @Override public Integer call() {
+        List<String> serverList;
         this.ssl = new Ssl(debug);
         if (null != file) {
             try {
-                servers = expandServers(file);
+                serverList = expandServers(file);
             }
             catch(IOException e) {
                 Cli.printError(e.getMessage());
                 return 1;
             }
         }
-        if (null == servers) {
+        else if (servers.length > 0 ) {
+            serverList = Arrays.asList(servers);
+        }
+        else {
             Cli.printError("At least one server expected as argument");
             return 1;
         }
-        return process(servers);
+
+        var results = process(serverList);
+        return format(results);
     }
 
-    private int process(String[] servers) {
-        ExecutorService pool = Executors.newFixedThreadPool(workers);
-        List<Future<ServerProtocols>> futures = new ArrayList<Future<ServerProtocols>>(); 
-        int index = 0;
-        String[] spinner = new String[]{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"};
-        for(var server : servers) {
-            System.out.printf("%s\r", spinner[index%8]);
-            var future = pool.submit(new ProtocolCallable(server, ssl));
-            futures.add(future);
-            index++;
-        }
-        for(var f : futures) {
-            try {
-                var res = f.get();
-                index = 0;
-                System.out.println();
-                Cli.printBanner(res.server());
-                if (res.error().length() > 0) {
-                    System.out.printf("  %-15s ", "Error");
-                    Cli.printError(res.error());
-                }
-                else {
-                    for (var protocol : ProtocolCallable.protocols) {
-                        printProtocolSupport(protocol, res.supported()[index]);
-                        index++;
-                    }
+    private int format(List<ServerProtocols> results) {
+        results.forEach((res) -> {
+            System.out.println();
+            Cli.printBanner(res.server());
+            if (res.error().length() > 0) {
+                System.out.printf("  %-15s ", "Error");
+                Cli.printError(res.error());
+            }
+            else {
+                int index = 0;
+                for (var protocol : ProtocolCallable.protocols) {
+                    Format.printProtocolSupport(protocol, res.supported()[index]);
+                    index++;
                 }
             }
-            catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
-        pool.shutdown();
+        });
         return 0;
     }
 
-    private String[] expandServers(Path file) throws IOException {
-        Stream<String> stream = Files.lines(file);
-        String[] servers = stream.filter(s -> s.length() > 0)
-                                 .filter(s -> !s.startsWith("#"))
-                                 .toArray(String[]::new);
-        stream.close();
-        return servers;
+    private List<ServerProtocols> process(List<String> servers) {
+        ExecutorService pool = Executors.newFixedThreadPool(workers);
+        List<Future<ServerProtocols>> futures = new ArrayList<Future<ServerProtocols>>();
+        
+        int index = 0;
+        String[] spinner = new String[]{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"};
+        
+        for(var server : servers) {
+            System.out.printf("%s\r", spinner[index%8]);
+            futures.add(pool.submit(new ProtocolCallable(server, ssl)));
+            index++;
+        }
+
+        List<ServerProtocols> results = new ArrayList<ServerProtocols>();
+        for(var f : futures) {
+            System.out.printf("%s\r", spinner[index%8]);
+            try {
+                results.add(f.get());
+            }
+            catch(Exception e) {
+                results.add(new ServerProtocols("", null, e.getMessage()));
+            }
+            index++;
+        }
+        pool.shutdown();
+        return results;
     }
 
-    private void printProtocolSupport(String protocol, boolean enabled) {
-        System.out.printf("  %-15s ", protocol);
-
-        switch(protocol) {
-        case "SSLv3":
-            if (enabled) {
-                Cli.printError(ENABLED);
-            }
-            else {
-                Cli.printSuccess(NOT_ENABLED);
-            }
-            break;
-        case "TLSv1":
-        case "TLSv1.1":
-            if (enabled) {
-                Cli.printWarning(ENABLED);
-            }
-            else {
-                Cli.printSuccess(NOT_ENABLED);
-            }
-            break;
-        case "TLSv1.2":
-        case "TLSv1.3":
-            if (enabled) {
-                Cli.printSuccess(ENABLED);
-            }
-            else {
-                System.out.println(NOT_ENABLED);
-            }
-            break;
-        default:
-            Cli.printWarning("unexpected protocol");
+    private List<String> expandServers(Path file) throws IOException {
+        List<String> servers;
+        try (Stream<String> stream = Files.lines(file)) {
+            servers = stream.filter(s -> s.length() > 0)
+            .filter(s -> !s.startsWith("#"))
+            .collect(Collectors.toList());
         }
+        return servers;
     }
 }

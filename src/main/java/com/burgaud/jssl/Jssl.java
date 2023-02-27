@@ -58,7 +58,7 @@ class ProtocolCallable implements Callable<ServerProtocols> {
 
 @Command(name = "jssl", 
          mixinStandardHelpOptions = true, 
-         version = "@|green,bold jssl version 0.5.0 |@",
+         version = "@|green,bold jssl version 0.6.1 |@",
          header = {
             "@|green,bold     __  ____  ____  __           |@",
             "@|green,bold   _(  )/ ___)/ ___)(  )          |@",
@@ -82,9 +82,17 @@ public class Jssl implements Callable<Integer> {
     @Option(names = {"-w", "--workers"}, description = "Number of concurrent workers.")
     private int workers = 1;
 
+    @Option(names = {"--java-version"}, description = "Show Java Version.")
+    private boolean javaVersion;
+
     private Ssl ssl = null;
 
     @Override public Integer call() {
+        if (javaVersion) {
+            Cli.printInfo(String.format("Java version %s", System.getProperty("java.version")));
+            return 0;
+        }
+
         List<String> serverList;
         this.ssl = new Ssl(debug);
         if (null != file) {
@@ -92,16 +100,16 @@ public class Jssl implements Callable<Integer> {
                 serverList = expandServers(file);
             }
             catch(IOException e) {
-                Cli.printError(e.getMessage());
+                Cli.printError(String.format("Error opening %s", e.getMessage()));
                 return 1;
             }
         }
-        else if (servers.length > 0 ) {
-            serverList = Arrays.asList(servers);
+        else if (null == servers) {
+            Cli.printError("At least a server or a file expected as argument");
+            return 1;
         }
         else {
-            Cli.printError("At least one server expected as argument");
-            return 1;
+            serverList = Arrays.asList(servers);
         }
 
         var results = process(serverList);
@@ -129,20 +137,20 @@ public class Jssl implements Callable<Integer> {
 
     private List<ServerProtocols> process(List<String> servers) {
         ExecutorService pool = Executors.newFixedThreadPool(workers);
-        List<Future<ServerProtocols>> futures = new ArrayList<Future<ServerProtocols>>();
+        List<Future<ServerProtocols>> futures = new ArrayList<>();
         
         int index = 0;
-        String[] spinner = new String[]{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"};
+        String[] spinner = new String[]{"|", "/", "-", "\\"};
         
         for(var server : servers) {
-            System.out.printf("%s\r", spinner[index%8]);
+            System.out.printf("%s\r", spinner[index%4]);
             futures.add(pool.submit(new ProtocolCallable(server, ssl)));
             index++;
         }
 
-        List<ServerProtocols> results = new ArrayList<ServerProtocols>();
+        List<ServerProtocols> results = new ArrayList<>();
         for(var f : futures) {
-            System.out.printf("%s\r", spinner[index%8]);
+            System.out.printf("%s\r", spinner[index%4]);
             try {
                 results.add(f.get());
             }
@@ -152,6 +160,7 @@ public class Jssl implements Callable<Integer> {
             index++;
         }
         pool.shutdown();
+        System.out.print("\r ");
         return results;
     }
 

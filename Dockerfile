@@ -4,15 +4,15 @@ ADD . .
 
 COPY java.security ${JAVA_HOME}/conf/security
 
-RUN microdnf -y install gzip zlib-static
+RUN microdnf -y install gzip zlib-static unzip
 
 RUN mkdir /build
 
-RUN javac -d /build src/main/java/com/burgaud/jssl/Main.java
+COPY build/distributions/jssl.zip /build
 
-RUN jar cfvm /jssl.jar /Manifest.txt -C /build .
-
-RUN jar tf /jssl.jar
+RUN mkdir /native
+RUN mkdir /files
+RUN unzip /build/jssl.zip -d /native
 
 ARG RESULT_LIB="/musl"
 RUN mkdir ${RESULT_LIB} && \
@@ -29,9 +29,10 @@ RUN curl -L -o zlib.tar.gz https://zlib.net/zlib-1.2.13.tar.gz && \
 
 ENV PATH="$PATH:/musl:/musl/bin"
 
-RUN native-image --static --libc=musl -jar /jssl.jar -o /jssl
+RUN native-image -cp /native/jssl/lib/picocli-4.7.1.jar --static --no-fallback --libc=musl -jar /native/jssl/lib/jssl.jar -o /jssl
 
 FROM scratch
-COPY --from=build /jssl-server /jssl
+COPY --from=build /jssl /jssl
+COPY --from=build /files /files
 
 ENTRYPOINT [ "/jssl" ]

@@ -1,7 +1,7 @@
 #!/usr/bin/env just --justfile
 
 APP := "jssl"
-VERSION := "0.2.0"
+VERSION := "0.6.1"
 
 alias db := docker-build
 alias ghp := github-push
@@ -14,6 +14,8 @@ default:
 
 # Build a docker image
 docker-build:
+    ./gradlew clean
+    ./gradlew distZip
     docker build -t andreburgaud/{{APP}}:latest .
     docker tag andreburgaud/{{APP}}:latest andreburgaud/{{APP}}:{{VERSION}}
 

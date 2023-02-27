@@ -24,7 +24,7 @@ $ mkdir -p temp/bin
 $ unzip build/distributions/jssl.zip -d temp
 ```
 
-* Compile native executagle
+* Compile native executable
 
 ```
 $ native-image -cp temp/jssl/lib/picocli-4.7.1.jar -jar temp/jssl/lib/jssl.jar --static --no-fallback -o temp/bin/jssl

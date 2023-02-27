@@ -1,18 +1,18 @@
 FROM ghcr.io/graalvm/native-image:22.3.1 as build
 
+RUN useradd -u 10001 jssluser
+
 ADD . .
 
 COPY java.security ${JAVA_HOME}/conf/security
 
-RUN microdnf -y install gzip zlib-static unzip
+RUN microdnf -y install gzip zlib-static unzip findutils tree
 
-RUN mkdir /build
-
-COPY build/distributions/jssl.zip /build
-
-RUN mkdir /native
+RUN mkdir -p /native/bin
 RUN mkdir /files
-RUN unzip /build/jssl.zip -d /native
+
+RUN ./gradlew distZip --no-daemon && \
+    unzip ./build/distributions/app.zip -d /native
 
 ARG RESULT_LIB="/musl"
 RUN mkdir ${RESULT_LIB} && \
@@ -29,10 +29,13 @@ RUN curl -L -o zlib.tar.gz https://zlib.net/zlib-1.2.13.tar.gz && \
 
 ENV PATH="$PATH:/musl:/musl/bin"
 
-RUN native-image -cp /native/jssl/lib/picocli-4.7.1.jar --static --no-fallback --libc=musl -jar /native/jssl/lib/jssl.jar -o /jssl
+RUN native-image -cp /native/app/lib/picocli-4.7.1.jar --static --no-fallback --libc=musl -jar /native/app/lib/app.jar -o /native/bin/jssl
 
 FROM scratch
-COPY --from=build /jssl /jssl
+COPY --from=build /native/bin/jssl /jssl
 COPY --from=build /files /files
+COPY --from=build /etc/passwd /etc/passwd
+
+USER jssluser
 
 ENTRYPOINT [ "/jssl" ]

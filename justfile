@@ -1,7 +1,8 @@
 #!/usr/bin/env just --justfile
 
 APP := "jssl"
-VERSION := "0.6.1"
+VERSION := "0.6.2"
+NATIVE_DIR := "native"
 
 alias db := docker-build
 alias ghp := github-push
@@ -13,9 +14,7 @@ default:
     @just --list
 
 # Build a docker image
-docker-build:
-    ./gradlew clean
-    ./gradlew distZip
+docker-build: clean
     docker build -t andreburgaud/{{APP}}:latest .
     docker tag andreburgaud/{{APP}}:latest andreburgaud/{{APP}}:{{VERSION}}
 
@@ -30,14 +29,14 @@ gradle-native: gradle-jar
 # Clean build and release artifacts
 clean:
     ./gradlew clean
-    -rm -rf temp-native
+    -rm -rf {{NATIVE_DIR}}
 
 # Direct native compile (no Gradle)
 native: clean
     ./gradlew distZip
-    mkdir -p temp-native/bin
-    unzip build/distributions/jssl.zip -d temp-native
-    native-image -cp temp-native/jssl/lib/picocli-4.7.1.jar -jar temp-native/jssl/lib/jssl.jar --static --no-fallback -o temp-native/bin/jssl
+    mkdir -p {{NATIVE_DIR}}/bin
+    unzip build/distributions/jssl.zip -d {{NATIVE_DIR}}
+    native-image -cp temp-native/jssl/lib/picocli-4.7.1.jar -jar temp-native/jssl/lib/jssl.jar --static --no-fallback -o {{NATIVE_DIR}}/bin/jssl
 
 # Push and tag changes to github
 github-push:

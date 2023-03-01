@@ -1,5 +1,9 @@
 package com.burgaud.jssl;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.*;
+
 public class Format {
     private static final String ENABLED = "enabled";
     private static final String NOT_ENABLED = "not enabled";
@@ -37,5 +41,27 @@ public class Format {
         default:
             Cli.printWarning("unexpected protocol");
         }
+    }
+
+    public static String[] boolToString(boolean[] bs) {
+        String[] bsStr = new String[bs.length];
+        int idx = 0;
+        for(var b : bs) {
+            bsStr[idx++] = String.valueOf(b);
+        }
+        return bsStr;
+    }
+    public static void csv(List<ServerProtocols> results) {
+        System.out.println("hostname, sslv3, tlsv1, tlsv1.1, tlsv1.2, tlsv1.3, error");
+        results.forEach((res) -> {
+            System.out.printf("%s,", res.server());
+            if (res.error().length() > 0) {
+                System.out.printf(",,,,,%s\n", res.error());
+            }
+            else {
+                System.out.printf(String.join(",", boolToString(res.supported())));
+                System.out.println((","));
+            }
+        });
     }
 }

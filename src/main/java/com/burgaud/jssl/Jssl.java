@@ -58,7 +58,7 @@ class ProtocolCallable implements Callable<ServerProtocols> {
 
 @Command(name = "jssl", 
          mixinStandardHelpOptions = true, 
-         version = "@|green,bold jssl version 0.6.1 |@",
+         version = "@|green,bold jssl version 0.7.0 |@",
          header = {
             "@|green,bold     __  ____  ____  __           |@",
             "@|green,bold   _(  )/ ___)/ ___)(  )          |@",
@@ -67,7 +67,7 @@ class ProtocolCallable implements Callable<ServerProtocols> {
          ""},
          description = "Validate health of servers TLS configuration.")
 public class Jssl implements Callable<Integer> {
-    @Parameters(paramLabel = "SERVER", description = "One or more servers to analyze.")
+    @Parameters(paramLabel = "SERVER", arity = "0..*", description = "One or more servers to analyze.")
     String[] servers;
 
     @Option(names = {"-d", "--debug"}, description = "Display debug information.")
@@ -113,10 +113,14 @@ public class Jssl implements Callable<Integer> {
         }
 
         var results = process(serverList);
-        return format(results);
+        return switch (format) {
+            case "csv" -> csvFormat(results);
+            //case "json" -> 0;
+            default -> consoleFormat(results);
+        };
     }
 
-    private int format(List<ServerProtocols> results) {
+    private int consoleFormat(List<ServerProtocols> results) {
         results.forEach((res) -> {
             System.out.println();
             Cli.printBanner(res.server());
@@ -135,6 +139,12 @@ public class Jssl implements Callable<Integer> {
         return 0;
     }
 
+    private int csvFormat(List<ServerProtocols> results) {
+        System.err.println();
+        Format.csv(results);
+        return 0;
+    }
+
     private List<ServerProtocols> process(List<String> servers) {
         ExecutorService pool = Executors.newFixedThreadPool(workers);
         List<Future<ServerProtocols>> futures = new ArrayList<>();
@@ -143,14 +153,14 @@ public class Jssl implements Callable<Integer> {
         String[] spinner = new String[]{"|", "/", "-", "\\"};
         
         for(var server : servers) {
-            System.out.printf("%s\r", spinner[index%4]);
+            System.err.printf("%s\r", spinner[index%4]);
             futures.add(pool.submit(new ProtocolCallable(server, ssl)));
             index++;
         }
 
         List<ServerProtocols> results = new ArrayList<>();
         for(var f : futures) {
-            System.out.printf("%s\r", spinner[index%4]);
+            System.err.printf("%s\r", spinner[index%4]);
             try {
                 results.add(f.get());
             }
@@ -160,7 +170,7 @@ public class Jssl implements Callable<Integer> {
             index++;
         }
         pool.shutdown();
-        System.out.print("\r ");
+        System.err.print("\r ");
         return results;
     }
 

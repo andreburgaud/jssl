@@ -36,7 +36,7 @@ native: clean
     ./gradlew distZip
     mkdir -p {{NATIVE_DIR}}/bin
     unzip build/distributions/jssl.zip -d {{NATIVE_DIR}}
-    native-image -cp temp-native/jssl/lib/picocli-4.7.1.jar -jar temp-native/jssl/lib/jssl.jar --static --no-fallback -o {{NATIVE_DIR}}/bin/jssl
+    native-image -cp {{NATIVE_DIR}}/jssl/lib/picocli-4.7.1.jar -jar {{NATIVE_DIR}}/jssl/lib/jssl.jar --static --no-fallback -o {{NATIVE_DIR}}/bin/jssl
 
 # Push and tag changes to github
 github-push:

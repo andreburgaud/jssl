@@ -1,7 +1,7 @@
 #!/usr/bin/env just --justfile
 
 APP := "jssl"
-VERSION := "0.6.2"
+VERSION := "0.7.0"
 NATIVE_DIR := "native"
 
 alias db := docker-build

@@ -76,7 +76,7 @@ public class Jssl implements Callable<Integer> {
     @Option(names = {"-f", "--file"}, description = "Servers are listed in a file.")
     private Path file;
 
-    @Option(names = {"--format"}, description = "Output format.")
+    @Option(names = {"--format"}, description = "Output format: csv or console (default).")
     private String format = "";
     
     @Option(names = {"-w", "--workers"}, description = "Number of concurrent workers.")

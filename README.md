@@ -58,7 +58,19 @@ $ docker run --rm -it -v $PWD:/files andreburgaud/jssl --file /files/servers.txt
 ...
 ```
 
-The image include a `/files` folder that you can map via the `--volume` option (or `-v`).
+The image include a `/files` folder that you can map via the `--volume` option (or `-v`). If you have a list of servers in `servers.txt`, in the current working directory, and you want to execute the command with 10 workers, the docker command line would be the following:
+
+```
+$ docker run --rm -it -v $PWD:/files andreburgaud/jssl --workers 10 --file /files/servers.txt
+...
+
+```
+
+
+### Workers
+
+If you pass a long list of servers to JSSL, especially via an input file, you may want to set a number of workers. By default there is only one worker. JSSL create a thread pool based on the number of workers set at the command line via the option `--workers` or `-w`.
+
 
 ### Server Ports
 

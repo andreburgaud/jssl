@@ -35,7 +35,7 @@ public class Format {
                 Cli.printSuccess(ENABLED);
             }
             else {
-                System.out.println(NOT_ENABLED);
+                Cli.printWarning(NOT_ENABLED);
             }
             break;
         default:

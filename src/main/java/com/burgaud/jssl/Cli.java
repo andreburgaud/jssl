@@ -9,11 +9,11 @@ public class Cli {
     }
 
     public static void printWarning(String msg) {
-        System.out.println(Ansi.AUTO.string(String.format("@|yellow %s|@", msg)));
+        System.out.println(Ansi.AUTO.string(String.format("@|yellow ⚠️  %s|@", msg)));
     }
 
     public static void printError(String msg) {
-        System.out.println(Ansi.AUTO.string(String.format("@|red %s|@", msg)));
+        System.out.println(Ansi.AUTO.string(String.format("@|red ☢️  %s|@", msg)));
     }
     
     public static void printInfo(String msg) {
@@ -21,7 +21,7 @@ public class Cli {
     }
     
     public static void printSuccess(String msg) {
-        System.out.println(Ansi.AUTO.string(String.format("@|green %s|@", msg)));
+        System.out.println(Ansi.AUTO.string(String.format("@|green ✅ %s|@", msg)));
     }
 }
 

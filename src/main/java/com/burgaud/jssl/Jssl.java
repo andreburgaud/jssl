@@ -58,7 +58,7 @@ class ProtocolCallable implements Callable<ServerProtocols> {
 
 @Command(name = "jssl", 
          mixinStandardHelpOptions = true, 
-         version = "@|green,bold jssl version 0.8.0 |@",
+         version = "@|green,bold jssl version 0.8.1 🔥|@",
          header = {
             "@|green,bold     __  ____  ____  __           |@",
             "@|green,bold   _(  )/ ___)/ ___)(  )          |@",
@@ -150,11 +150,9 @@ public class Jssl implements Callable<Integer> {
         List<Future<ServerProtocols>> futures = new ArrayList<>();
         
         int index = 0;
-        //String[] spinner = new String[]{"|", "/", "-", "\\"};
         String[] spinner = new String[]{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"};
         
         for(var server : servers) {
-            //System.err.printf("%s\r", spinner[index%4]);
             System.err.printf("%s\r", spinner[index%8]);
             futures.add(pool.submit(new ProtocolCallable(server, ssl)));
             index++;
@@ -162,7 +160,6 @@ public class Jssl implements Callable<Integer> {
 
         List<ServerProtocols> results = new ArrayList<>();
         for(var f : futures) {
-            //System.err.printf("%s\r", spinner[index%4]);
             System.err.printf("%s\r", spinner[index%8]);
             try {
                 results.add(f.get());

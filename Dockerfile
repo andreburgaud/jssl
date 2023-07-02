@@ -1,40 +1,30 @@
-FROM ghcr.io/graalvm/native-image:22.3.1 as build
+FROM ghcr.io/graalvm/native-image:muslib-ol9-java17-22.3.2 as build
+
+ENV LANG=C.UTF-8
 
 RUN useradd -u 10001 jssluser
+
+RUN microdnf -y install findutils
 
 ADD . .
 
 COPY java.security ${JAVA_HOME}/conf/security
 
-RUN microdnf -y install gzip zlib-static unzip findutils tree
-
 RUN mkdir -p /native/bin
+RUN mkdir -p /native/lib
+
 RUN mkdir /files
 
-RUN ./gradlew distZip --no-daemon && \
-    unzip ./build/distributions/app.zip -d /native
+RUN ./gradlew installDist --no-daemon
 
-ARG RESULT_LIB="/musl"
-RUN mkdir ${RESULT_LIB} && \
-    curl -L -o musl.tar.gz https://more.musl.cc/10.2.1/x86_64-linux-musl/x86_64-linux-musl-native.tgz && \
-    tar -xvzf musl.tar.gz -C ${RESULT_LIB} --strip-components 1
-
-ENV CC=/musl/bin/gcc
-
-RUN curl -L -o zlib.tar.gz https://zlib.net/zlib-1.2.13.tar.gz && \
-    mkdir zlib && tar -xvzf zlib.tar.gz -C zlib --strip-components 1 && \
-    cd zlib && ./configure --static --prefix=/musl && \
-    make && make install && \
-    cd / && rm -rf /zlib && rm -f /zlib.tar.gz
-
-ENV PATH="$PATH:/musl:/musl/bin"
-
-RUN native-image -cp /native/app/lib/picocli-4.7.1.jar --static --no-fallback --libc=musl -jar /native/app/lib/app.jar -o /native/bin/jssl
+RUN native-image -cp ./build/install/jssl/lib/picocli-4.7.1.jar --static --no-fallback --libc=musl -jar ./build/install/jssl/lib/jssl.jar -o /native/bin/jssl
 
 FROM scratch
 COPY --from=build /native/bin/jssl /jssl
 COPY --from=build /files /files
 COPY --from=build /etc/passwd /etc/passwd
+
+ENV LANG=C.UTF-8
 
 USER jssluser
 

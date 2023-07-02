@@ -41,6 +41,42 @@ Validate health of servers TLS configuration.
   -w, --workers=<workers>   Number of concurrent workers.
 ```
 
+### List of Servers in a File
+
+To avoid typing may hosts at the command line, you can create a file with one host per line and use this file as an argument to option `--file`. For example you can prepare a file with the follwoing entries:
+
+```
+mailserv.baehal.com
+google.com
+microsoft.com
+```
+
+Assuming the file is named `servers.txt` and exists in the current directory, you can run the JSSL container as follows:
+
+```
+$ docker run --rm -it -v $PWD:/files andreburgaud/jssl --file /files/servers.txt
+...
+```
+
+The image include a `/files` folder that you can map via the `--volume` option (or `-v`).
+
+### Server Ports
+
+The default SSL port for each server is `443`. If SSL is enabled on a port other than `443` for a given server, you can append the port to a server name, separating the name of the server and the port number:
+
+```
+<server_name>:<port>
+```
+
+If you enable SSL on port `4433` for host `example.com`, the JSSL input will be the following:
+
+```
+example.com:4433
+```
+
+This works at the JSSL command line or in an input file with option `--file`.
+
+
 ## Java Compilation
 
 To execute a local non-native version, create a first a distribution:
@@ -72,6 +108,7 @@ Another option is to consider a native compilation via GraalVM (see the next sec
 ## Native Compilation
 
 * As of 7/1/2023, the Linux native compilation is successful via a container. You can see the `justfile` task `native-linux` to perform a Linux native build.
+* Linux x86_64 native executable are available in the [GitHub releases section](https://github.com/andreburgaud/jssl/releases)
 * Static executable images are not supported on Mac Os (Darwin)
 
 # License

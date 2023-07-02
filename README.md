@@ -2,6 +2,8 @@
 
 SSL Client which checks SSL/TLS protocols enabled on a server (from SSLv3 to TLS v1.3)
 
+![JSSL 0.8.1 Console Output](https://github.com/andreburgaud/jssl/assets/6396088/67b8a736-32ef-4cae-adea-e8b0af6aebdc)
+
 ## Usage
 
 The recommended usage is via Docker. For example, to check the SSL/TLS protocol versions enabled on the main Google server:

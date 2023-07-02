@@ -67,11 +67,10 @@ This will affect any Java application running in this Java environment, hence we
 
 Another option is to consider a native compilation via GraalVM (see the next section).
 
-
 ## Native Compilation
 
-As of 7/1/2023, the Linux native compilation is successful via a container. You can see the `justfile` task `native-linux` to perform a Linux native build.
-
+* As of 7/1/2023, the Linux native compilation is successful via a container. You can see the `justfile` task `native-linux` to perform a Linux native build.
+* Static executable images are not supported on Mac Os (Darwin)
 
 # License
 

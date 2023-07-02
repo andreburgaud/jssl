@@ -6,7 +6,7 @@ SSL Client which checks SSL/TLS protocols enabled on a server (from SSLv3 to TLS
 
 ## Usage
 
-The recommended usage is via Docker. For example, to check the SSL/TLS protocol versions enabled on the main Google server:
+The recommended usage is via [Docker](https://hub.docker.com/r/andreburgaud/jssl). For example, to check the SSL/TLS protocol versions enabled on the main Google server:
 
 ```
 $ docker run --rm -it andreburgaud/jssl google.com

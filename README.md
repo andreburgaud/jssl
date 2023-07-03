@@ -43,7 +43,7 @@ Validate health of servers TLS configuration.
 
 ### List of Servers in a File
 
-To avoid typing may hosts at the command line, you can create a file with one host per line and use this file as an argument to option `--file`. For example you can prepare a file with the follwoing entries:
+To avoid typing many hosts at the command line, you can create a file with one host per line and use this file as an argument to option `--file`. For example you can prepare a file with the follwoing entries:
 
 ```
 mailserv.baehal.com
@@ -58,7 +58,7 @@ $ docker run --rm -it -v $PWD:/files andreburgaud/jssl --file /files/servers.txt
 ...
 ```
 
-The image include a `/files` folder that you can map via the `--volume` option (or `-v`).
+The image includes a `/files` folder that you can map via the docker `--volume` option (or `-v`).
 
 
 ### Workers
@@ -76,7 +76,7 @@ $ docker run --rm -it -v $PWD:/files andreburgaud/jssl --workers 10 --file /file
 
 ### Server Ports
 
-The default SSL port for each server is `443`. If SSL is enabled on a port other than `443` for a given server, you can append the port to a server name, separating the name of the server and the port number:
+The default SSL port for each server is `443`. If SSL is enabled on a port other than `443` for a given server, you can append the port to a server name, separating the name of the server and the port number with the colon (`:`) character:
 
 ```
 <server_name>:<port>
@@ -93,7 +93,7 @@ This works at the JSSL command line or in an input file with option `--file`.
 
 ## Java Compilation
 
-To execute a local non-native version, create a first a distribution:
+To execute a local non-native version, first, create a distribution:
 
 
 ```
@@ -115,14 +115,16 @@ By default, the Java compilation will generate a version only able to validate S
 #    DH keySize < 1024, EC keySize < 224, 3DES_EDE_CBC, anon, NULL, \
 #    include jdk.disabled.namedCurves
 ```
-This will affect any Java application running in this Java environment, hence we recommend that you instead use the [Docker image](https://hub.docker.com/r/andreburgaud/jssl) built with the proper settings.
+
+This would affect any Java applications running in this Java environment, hence we recommend that you instead use the [Docker image](https://hub.docker.com/r/andreburgaud/jssl) built with the proper settings.
 
 Another option is to consider a native compilation via GraalVM (see the next section).
+
 
 ## Native Compilation
 
 * As of 7/1/2023, the Linux native compilation is successful via a container. You can see the `justfile` task `native-linux` to perform a Linux native build.
-* Linux x86_64 native executable are available in the [GitHub releases section](https://github.com/andreburgaud/jssl/releases)
+* Linux x86_64 native executables are available in the [GitHub releases section](https://github.com/andreburgaud/jssl/releases)
 * Static executable images are not supported on Mac Os (Darwin)
 
 # License

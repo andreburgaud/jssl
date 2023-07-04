@@ -17,7 +17,7 @@ RUN mkdir /files
 
 RUN ./gradlew installDist --no-daemon
 
-RUN native-image -cp ./build/install/jssl/lib/picocli-4.7.1.jar --static --no-fallback --libc=musl -jar ./build/install/jssl/lib/jssl.jar -o /native/bin/jssl
+RUN native-image -cp ./build/install/jssl/lib/picocli-4.7.4.jar --static --no-fallback --libc=musl -jar ./build/install/jssl/lib/jssl.jar -o /native/bin/jssl
 
 FROM scratch
 COPY --from=build /native/bin/jssl /jssl

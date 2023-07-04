@@ -15,7 +15,6 @@ default:
 
 # Build a docker image
 docker-build: clean
-    ./gradlew installDist
     docker build -t andreburgaud/{{APP}}:latest .
     docker tag andreburgaud/{{APP}}:latest andreburgaud/{{APP}}:{{VERSION}}
 
@@ -42,7 +41,7 @@ native-linux:
     docker create --name jssl-build andreburgaud/{{APP}}:{{VERSION}}
     docker cp jssl-build:/jssl ./bin
     docker rm -f jssl-build
-    zip -j build/{{APP}}-{{VERSION}}_{{os()}}_{{arch()}}.zip bin/{{APP}}
+    zip -j build/{{APP}}-{{VERSION}}_linux_{{arch()}}.zip bin/{{APP}}
 
 # Direct native compile (not working as of 7/1/2023)
 native: clean

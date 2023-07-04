@@ -8,6 +8,7 @@ alias db := docker-build
 alias ghp := github-push
 alias gj := gradle-jar
 alias c := clean
+alias nl := native-linux
 
 # Default recipe (this list)
 default:
@@ -43,6 +44,8 @@ native-linux: clean
     docker create --name jssl-build andreburgaud/{{APP}}:{{VERSION}}
     docker cp jssl-build:/jssl ./bin
     docker rm -f jssl-build
+    strip ./bin/jssl
+    upx ./bin/jssl
     zip -j bin/{{APP}}-{{VERSION}}_linux_{{arch()}}.zip bin/{{APP}}
 
 # Direct native compile (not working as of 7/1/2023)

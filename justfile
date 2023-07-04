@@ -1,7 +1,7 @@
 #!/usr/bin/env just --justfile
 
 APP := "jssl"
-VERSION := "0.8.1"
+VERSION := "0.8.2"
 NATIVE_DIR := "native"
 
 alias db := docker-build
@@ -35,13 +35,15 @@ gradle-native: gradle-jar
 clean:
     ./gradlew clean
     -rm -rf {{NATIVE_DIR}}
+    -rm -rf ./bin
 
 # Native compile via container (Linux only)
-native-linux:
+native-linux: clean
+    mkdir ./bin
     docker create --name jssl-build andreburgaud/{{APP}}:{{VERSION}}
     docker cp jssl-build:/jssl ./bin
     docker rm -f jssl-build
-    zip -j build/{{APP}}-{{VERSION}}_linux_{{arch()}}.zip bin/{{APP}}
+    zip -j bin/{{APP}}-{{VERSION}}_linux_{{arch()}}.zip bin/{{APP}}
 
 # Direct native compile (not working as of 7/1/2023)
 native: clean

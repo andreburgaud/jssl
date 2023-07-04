@@ -58,7 +58,7 @@ class ProtocolCallable implements Callable<ServerProtocols> {
 
 @Command(name = "jssl", 
          mixinStandardHelpOptions = true, 
-         version = "@|green,bold jssl version 0.8.1 🔥|@",
+         version = "@|green,bold jssl version 0.8.2 🔥|@",
          header = {
             "@|green,bold     __  ____  ____  __           |@",
             "@|green,bold   _(  )/ ___)/ ___)(  )          |@",

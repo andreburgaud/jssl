@@ -1,7 +1,7 @@
 #!/usr/bin/env just --justfile
 
 APP := "jssl"
-VERSION := "0.8.2"
+VERSION := "0.9.0"
 NATIVE_DIR := "native"
 
 alias db := docker-build
@@ -44,8 +44,6 @@ native-linux: clean
     docker create --name jssl-build andreburgaud/{{APP}}:{{VERSION}}
     docker cp jssl-build:/jssl ./bin
     docker rm -f jssl-build
-    strip ./bin/jssl
-    upx ./bin/jssl
     zip -j bin/{{APP}}-{{VERSION}}_linux_{{arch()}}.zip bin/{{APP}}
 
 # Direct native compile (not working as of 7/1/2023)

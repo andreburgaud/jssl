@@ -2,6 +2,8 @@ FROM ghcr.io/graalvm/native-image:muslib-ol9-java17-22.3.2 as build
 
 ENV LANG=C.UTF-8
 
+WORKDIR /jssl
+
 RUN useradd -u 10001 jssluser
 
 RUN microdnf -y install findutils xz
@@ -10,8 +12,7 @@ RUN curl --location --output upx-4.0.2-amd64_linux.tar.xz "https://github.com/up
     tar -xJf "upx-4.0.2-amd64_linux.tar.xz" && \
     cp upx-4.0.2-amd64_linux/upx /bin/
 
-RUN mkdir -p /work/native/bin && \
-    mkdir -p /work/native/lib && \
+RUN mkdir -p ./native/bin && \
     mkdir /files
 
 WORKDIR /jssl

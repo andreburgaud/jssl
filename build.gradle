@@ -17,6 +17,9 @@ dependencies {
 }
 
 tasks.named('jar') {
+    from('src/main/java') {
+        include '**/*.jks'
+    }
     manifest {
         attributes('Implementation-Title': project.name,
                    'Class-Path': configurations.runtimeClasspath.files.collect { it.name }.join(' '),

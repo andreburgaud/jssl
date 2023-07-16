@@ -16,6 +16,15 @@ dependencies {
     annotationProcessor 'info.picocli:picocli-codegen:4.7.4'
 }
 
+tasks.named('jar') {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                   'Class-Path': configurations.runtimeClasspath.files.collect { it.name }.join(' '),
+                   'Implementation-Version': project.version,
+                   'Main-Class': application.mainClass)
+    }
+}
+
 graalvmNative {
     binaries {
         main {

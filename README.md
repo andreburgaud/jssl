@@ -106,6 +106,14 @@ Then you can execute JSSL by invoking the generate bootstrap script:
 $ build/install/jssl/bin/jssl google.com
 ```
 
+You can also use `java -jar`, as follows:
+
+```
+$ java -Djava.security.properties==./java.security -jar build/install/jssl/lib/jssl.jar google.com
+```
+
+Setting `java.security.properties` to `./java.security` enables SSL protocol below `TLSv1.2`.
+
 ### Warning
 
 By default, the Java compilation will generate a version only able to validate SSL protocols enabled in the file `${JAVA_HOME}/conf/security`. For JSSL to validate SSLv3, TLSv1 and TLSv1.1, you need to enable these protocols for the Java runtime. You can bypass the existing security limitations by commenting the following lines in `${JAVA_HOME}/conf/security`:
@@ -126,6 +134,41 @@ Another option is to consider a native compilation via GraalVM (see the next sec
 * As of 7/1/2023, the Linux native compilation is successful via a container. You can see the `justfile` task `native-linux` to perform a Linux native build.
 * Linux x86_64 native executables are available in the [GitHub releases section](https://github.com/andreburgaud/jssl/releases)
 * Static executable images are not supported on Mac Os (Darwin)
+
+
+### Native Image via Docker
+
+If you are on Linux x86-64, you can build the Docker image and then extract the files needed to run JSSL Server locally:
+
+```
+$ docker build -t jssl .
+$ docker create --name jssl-copy jssl:latest
+$ docker cp jssl-copy:/jssl .
+$ docker rm -f jssl-copy
+```
+
+To run the application:
+
+```
+$ ./jssl google.com
+```
+
+### Native Image
+
+To build a native image on your machine - not via Docker - you need to [install GraalVM](https://www.graalvm.org/latest/docs/getting-started/). You can also use [SDKMAN](https://sdkman.io/) to manage different JVMs, including GraalVM.
+
+You can build a local native image, executing the following command:
+
+```
+$ just native-image
+```
+
+To test and execute the application:
+
+```
+$ native/bin/jssl google.com
+```
+
 
 # License
 

@@ -39,7 +39,7 @@ clean:
     -rm -rf ./bin
 
 # Native compile via container (Linux only)
-native-linux: clean
+native-linux: docker-build
     mkdir ./bin
     docker create --name jssl-build andreburgaud/{{APP}}:{{VERSION}}
     docker cp jssl-build:/jssl ./bin

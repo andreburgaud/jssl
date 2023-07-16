@@ -28,8 +28,8 @@ run  *ARGS:
 gradle-jar:
     ./gradlew jar
 
-# Generate the jar file (not working as of 7/1/2023)
-gradle-native: gradle-jar
+# Generate native image
+gradle-native:
     ./gradlew nativeCompile
 
 # Clean build and release artifacts
@@ -50,7 +50,7 @@ native-linux: clean
 native: clean
     ./gradlew installDist
     mkdir -p {{NATIVE_DIR}}/bin
-    native-image -cp ./build/install/jssl/lib/picocli-4.7.4.jar --static --no-fallback --libc=musl -jar ./build/install/jssl/lib/jssl.jar -o {{NATIVE_DIR}}/bin/jssl
+    native-image -cp ./build/install/jssl/lib/picocli-4.7.4.jar --no-fallback -jar ./build/install/jssl/lib/jssl.jar -o {{NATIVE_DIR}}/bin/jssl
 
 # Push and tag changes to github
 github-push:

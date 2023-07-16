@@ -16,26 +16,11 @@ dependencies {
     annotationProcessor 'info.picocli:picocli-codegen:4.7.4'
 }
 
-tasks.named('jar') {
-    from('src/main/java') {
-        include '**/*.jks'
-    }
-    manifest {
-        attributes('Implementation-Title': project.name,
-                   'Class-Path': configurations.runtimeClasspath.files.collect { it.name }.join(' '),
-                   'Implementation-Version': project.version,
-                   'Main-Class': application.mainClass)
-    }
-}
-
 graalvmNative {
     binaries {
         main {
-            buildArgs.add('-o jssl') 
             buildArgs.add('--no-fallback')
-            buildArgs.add('--static')
-            buildArgs.add('--no-server')
-            buildArgs.add('--libc=musl')
+            buildArgs.add('-o jssl')
         }
     }
 }

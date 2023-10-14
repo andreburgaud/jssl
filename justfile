@@ -51,6 +51,7 @@ native-image: clean
     ./gradlew installDist
     mkdir -p {{NATIVE_DIR}}/bin
     native-image --initialize-at-build-time={{APP}} -Djava.security.properties==./java.security -cp ./build/install/jssl/lib/picocli-4.7.5.jar --no-fallback -jar ./build/install/jssl/lib/jssl.jar -o {{NATIVE_DIR}}/bin/{{APP}}
+    zip -j {{NATIVE_DIR}}/{{APP}}-{{VERSION}}_{{os()}}_{{arch()}}.zip {{NATIVE_DIR}}/bin/{{APP}}
 
 # Push and tag changes to github
 github-push:

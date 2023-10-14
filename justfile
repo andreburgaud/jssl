@@ -1,7 +1,7 @@
 #!/usr/bin/env just --justfile
 
 APP := "jssl"
-VERSION := "0.10.0"
+VERSION := "0.11.0"
 NATIVE_DIR := "native"
 
 alias db := docker-build
@@ -20,7 +20,7 @@ docker-build: clean
     docker tag andreburgaud/{{APP}}:latest andreburgaud/{{APP}}:{{VERSION}}
 
 # Run from an install distribution
-run  *ARGS:
+run *ARGS:
     ./gradlew installDist
     ./build/install/jssl/bin/jssl {{ARGS}}
 
@@ -50,7 +50,7 @@ native-linux: docker-build
 native-image: clean
     ./gradlew installDist
     mkdir -p {{NATIVE_DIR}}/bin
-    native-image --initialize-at-build-time={{APP}} -Djava.security.properties==./java.security -cp ./build/install/jssl/lib/picocli-4.7.4.jar --no-fallback -jar ./build/install/jssl/lib/jssl.jar -o {{NATIVE_DIR}}/bin/{{APP}}
+    native-image --initialize-at-build-time={{APP}} -Djava.security.properties==./java.security -cp ./build/install/jssl/lib/picocli-4.7.5.jar --no-fallback -jar ./build/install/jssl/lib/jssl.jar -o {{NATIVE_DIR}}/bin/{{APP}}
 
 # Push and tag changes to github
 github-push:

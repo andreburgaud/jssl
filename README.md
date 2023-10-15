@@ -2,7 +2,7 @@
 
 SSL Client which checks SSL/TLS protocols enabled on a server (from SSLv3 to TLS v1.3)
 
-![JSSL 0.8.1 Console Output](https://github.com/andreburgaud/jssl/assets/6396088/67b8a736-32ef-4cae-adea-e8b0af6aebdc)
+![JSSL 0.12.0 Console Output](https://github.com/andreburgaud/jssl/assets/6396088/301e179b-35f7-473d-a007-0517961f08f7)
 
 ## Usage
 

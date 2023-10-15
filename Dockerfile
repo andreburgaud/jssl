@@ -1,5 +1,3 @@
-#FROM ghcr.io/graalvm/native-image:muslib-ol9-java17-22.3.3 as build
-
 FROM container-registry.oracle.com/graalvm/native-image:21-muslib-ol9 as build
 
 ENV LANG=C.UTF-8
@@ -25,7 +23,7 @@ COPY java.security ${JAVA_HOME}/conf/security
 
 RUN ./gradlew installDist --no-daemon
 
-RUN native-image -cp /jssl/build/install/jssl/lib/picocli-4.7.5.jar --static --no-fallback --libc=musl -jar /jssl/build/install/jssl/lib/jssl.jar -o /jssl/native/bin/jssl && \
+RUN native-image -march=compatibility -cp /jssl/build/install/jssl/lib/picocli-4.7.5.jar --static --no-fallback --libc=musl -jar /jssl/build/install/jssl/lib/jssl.jar -o /jssl/native/bin/jssl && \
     strip /jssl/native/bin/jssl && \
     upx --best /jssl/native/bin/jssl
 
